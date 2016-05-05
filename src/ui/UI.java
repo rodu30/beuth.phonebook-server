@@ -1,4 +1,4 @@
-package main;
+package ui;
 
 import helper.EntryPair;
 import search.NameSearch;
@@ -9,7 +9,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Created by romanduhr on 05.05.16.
+ * @className UI
+ * @author romanduhr
+ * @date   30.04.16
+ *
+ * User Interface for communication with user.
  */
 public class UI {
 
