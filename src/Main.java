@@ -1,4 +1,4 @@
-import helper.EntryPair;
+import dataStructure.EntryPair;
 import ui.UI;
 
 /**
@@ -21,7 +21,7 @@ public class Main {
                 new EntryPair("von Schulz", "4792")
         };
 
-        // create UI and start infinite loop
+        // Create UI and start infinite loop
         UI ui = new UI(phonebook);
         while(true) {
             ui.execute();

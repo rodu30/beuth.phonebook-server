@@ -1,6 +1,6 @@
 package ui;
 
-import helper.EntryPair;
+import dataStructure.EntryPair;
 import search.NameSearch;
 import search.NumberSearch;
 
@@ -17,8 +17,8 @@ import java.io.InputStreamReader;
  */
 public class UI {
 
-    EntryPair[] phonebook;
-    BufferedReader in;
+    private EntryPair[] phonebook;
+    private BufferedReader in;
 
     public UI(EntryPair[] phonebook) {
         System.out.println("Hello");
@@ -41,7 +41,7 @@ public class UI {
             } else if (inp.equals("1")) {
                 System.out.println("Please enter name: ");
                 String inpNa = in.readLine();
-                if (inpNa.equals(" ") || inpNa == null) {
+                if (inpNa.equals(" ") || inpNa.equals("")) {
                     System.out.println("Please try again.");
                 } else {
                     Thread t1 = new Thread(new NameSearch(phonebook, inpNa));
@@ -56,7 +56,7 @@ public class UI {
             } else if (inp.equals("2")) {
                 System.out.println("Please enter number: ");
                 String inpNu = in.readLine();
-                if (inpNu.equals(" ") || inpNu == null) {
+                if (inpNu.equals(" ") || inpNu.equals("")) {
                     System.out.println("Please try again.");
                 } else {
                     Thread t2 = new Thread(new NumberSearch(phonebook, inpNu));
@@ -71,17 +71,17 @@ public class UI {
             } else if (inp.equals("3")) {
                 System.out.println("Please enter 'name-number': ");
                 String inpNaNu = in.readLine();
-                if (inpNaNu.equals(" ") || inpNaNu == null) {
+                if (inpNaNu.equals(" ") || inpNaNu.equals("")) {
                     System.out.println("Please try again.");
                 } else {
                     String[] p = inpNaNu.split("-");
                     Thread t3 = new Thread(new NameSearch(phonebook, p[0]));
-                    Thread t4 = new Thread(new NumberSearch(phonebook, p[1]));
+                    Thread t5 = new Thread(new NumberSearch(phonebook, p[1]));
                     t3.start();
-                    t4.start();
+                    t5.start();
                     try {
                         t3.join();
-                        t4.join();
+                        t5.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

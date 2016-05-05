@@ -1,6 +1,6 @@
 package search;
 
-import helper.EntryPair;
+import dataStructure.EntryPair;
 
 /**
  * @className NameSearch
