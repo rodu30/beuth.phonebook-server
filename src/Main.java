@@ -1,12 +1,12 @@
 import helper.EntryPair;
-import main.UI;
+import ui.UI;
 
 /**
  * @className Main
  * @author romanduhr
  * @date   30.04.16
  *
- *  Main class creates phonebook and starts main threat.
+ *  Main class creates phonebook and starts ui threat.
  */
 public class Main {
 

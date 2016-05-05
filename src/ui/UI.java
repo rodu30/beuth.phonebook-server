@@ -26,20 +26,40 @@ public class UI {
         this.in = new BufferedReader(new InputStreamReader(System.in));
     }
 
+    /**
+     * Reads console input and starts search threads.
+     */
     public void execute() {
         System.out.println("Type 'exit' if you want to end program.");
-        System.out.println("type 'name' if you want to search for a name, enter 'num' for number or enter 'name+num' for an name and a number: ");
+        System.out.println("type '1' if you want to search for a name, type '2' for number or type '3' if you want to search for a name and a number:");
         try {
-            String inp1 = in.readLine();
-            if (inp1.equals("exit")) {
+            String inp = in.readLine();
+
+            if (inp.equals("exit")) {
                 System.exit(0);
-            } else if (inp1.equals("name")) {
+
+            } else if (inp.equals("1")) {
                 System.out.println("Please enter name: ");
                 String inpNa = in.readLine();
-                if (inpNa == "") {
+                if (inpNa.equals(" ") || inpNa == null) {
                     System.out.println("Please try again.");
                 } else {
-                    Thread t2 = new Thread(new NameSearch(phonebook, inpNa));
+                    Thread t1 = new Thread(new NameSearch(phonebook, inpNa));
+                    t1.start();
+                    try {
+                        t1.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } else if (inp.equals("2")) {
+                System.out.println("Please enter number: ");
+                String inpNu = in.readLine();
+                if (inpNu.equals(" ") || inpNu == null) {
+                    System.out.println("Please try again.");
+                } else {
+                    Thread t2 = new Thread(new NumberSearch(phonebook, inpNu));
                     t2.start();
                     try {
                         t2.join();
@@ -47,38 +67,26 @@ public class UI {
                         e.printStackTrace();
                     }
                 }
-            } else if (inp1.equals("num")) {
-                System.out.println("Please enter number: ");
-                String inpNu = in.readLine();
-                if (inpNu == "") {
-                    System.out.println("Please try again.");
-                } else {
-                    Thread t3 = new Thread(new NumberSearch(phonebook, inpNu));
-                    t3.start();
-                    try {
-                        t3.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } else if (inp1.equals("name+num")) {
-                System.out.println("Please enter name-number: ");
+
+            } else if (inp.equals("3")) {
+                System.out.println("Please enter 'name-number': ");
                 String inpNaNu = in.readLine();
-                if (inpNaNu == "") {
+                if (inpNaNu.equals(" ") || inpNaNu == null) {
                     System.out.println("Please try again.");
                 } else {
                     String[] p = inpNaNu.split("-");
-                    Thread t4 = new Thread(new NameSearch(phonebook, p[0]));
-                    Thread t5 = new Thread(new NumberSearch(phonebook, p[1]));
+                    Thread t3 = new Thread(new NameSearch(phonebook, p[0]));
+                    Thread t4 = new Thread(new NumberSearch(phonebook, p[1]));
+                    t3.start();
                     t4.start();
-                    t5.start();
                     try {
+                        t3.join();
                         t4.join();
-                        t5.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+
             } else {
                 System.out.println("Please try again.");
             }

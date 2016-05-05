@@ -21,7 +21,7 @@ public abstract class Search implements Runnable {
 
     @Override
     public void run() {
-//        System.out.println("Start name search...");
+        System.out.println("Start search...");
         synchronized(phonebook) {
             int hit = 0;
             for (EntryPair e : phonebook) {
