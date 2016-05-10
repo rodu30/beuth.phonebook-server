@@ -77,7 +77,7 @@ public class UI {
             } else if (inp.equals("3")) {
                 System.out.println("Please enter 'name-number': ");
                 String inpNaNu = in.readLine();
-                if (isValid(inpNaNu)) {
+                if (isValid(inpNaNu) && inpNaNu.matches("\\S+-\\S+")) {
                     ArrayList<String> result = new ArrayList<>();
                     String[] p = inpNaNu.split("-");
                     Thread t3 = new Thread(new NameSearch(phonebook, p[0], result));
