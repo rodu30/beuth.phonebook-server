@@ -43,9 +43,7 @@ public class UI {
             } else if (inp.equals("1")) {
                 System.out.println("Please enter name: ");
                 String inpNa = in.readLine();
-                if (inpNa.equals(" ") || inpNa.equals("")) {
-                    System.out.println("Please try again.");
-                } else {
+                if (isValid(inpNa)) {
                     ArrayList<String> result = new ArrayList<>();
                     Thread t1 = new Thread(new NameSearch(phonebook, inpNa, result));
                     t1.start();
@@ -55,14 +53,14 @@ public class UI {
                         e.printStackTrace();
                     }
                     printResult(inpNa, result);
+                } else {
+                    printError();
                 }
 
             } else if (inp.equals("2")) {
                 System.out.println("Please enter number: ");
                 String inpNu = in.readLine();
-                if (inpNu.equals(" ") || inpNu.equals("")) {
-                    System.out.println("Please try again.");
-                } else {
+                if (isValid(inpNu)) {
                     ArrayList<String> result = new ArrayList<>();
                     Thread t2 = new Thread(new NumberSearch(phonebook, inpNu, result));
                     t2.start();
@@ -72,14 +70,14 @@ public class UI {
                         e.printStackTrace();
                     }
                     printResult(inpNu, result);
+                } else {
+                    printError();
                 }
 
             } else if (inp.equals("3")) {
                 System.out.println("Please enter 'name-number': ");
                 String inpNaNu = in.readLine();
-                if (inpNaNu.equals(" ") || inpNaNu.equals("")) {
-                    System.out.println("Please try again.");
-                } else {
+                if (isValid(inpNaNu)) {
                     ArrayList<String> result = new ArrayList<>();
                     String[] p = inpNaNu.split("-");
                     Thread t3 = new Thread(new NameSearch(phonebook, p[0], result));
@@ -93,10 +91,12 @@ public class UI {
                         e.printStackTrace();
                     }
                     printResult(inpNaNu, result);
+                } else {
+                    printError();
                 }
 
             } else {
-                System.out.println("Please try again.");
+                printError();
             }
             System.out.println("");
         } catch (IOException e) {
@@ -120,9 +120,25 @@ public class UI {
         }
     }
 
+    /**
+     * checks if input is valid (no empty input, no spaces, no tabs)
+     *
+     * @param input
+     * @return boolean
+     */
     private boolean isValid(String input) {
-        if (input.isEmpty()) return false;
-        if (input.matches())
+        if (input.isEmpty() || input.matches("\\s+") || input.matches("\\t+")) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * prints error message
+     */
+    private void printError() {
+        System.out.println("Not a valid input, please try again.");
     }
 
 
