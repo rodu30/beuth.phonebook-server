@@ -22,7 +22,7 @@ public class UI {
     private BufferedReader in;
 
     public UI(EntryPair[] phonebook) {
-        System.out.println("Hello");
+        System.out.println("Welcome to the phone server");
         this.phonebook = phonebook;
         this.in = new BufferedReader(new InputStreamReader(System.in));
     }
