@@ -7,6 +7,7 @@ import search.NumberSearch;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * @className UI
@@ -33,6 +34,7 @@ public class UI {
         System.out.println("Type 'exit' if you want to end program.");
         System.out.println("type '1' if you want to search for a name, type '2' for number or type '3' if you want to search for a name and a number:");
         try {
+            // start input-reader
             String inp = in.readLine();
 
             if (inp.equals("exit")) {
@@ -44,13 +46,15 @@ public class UI {
                 if (inpNa.equals(" ") || inpNa.equals("")) {
                     System.out.println("Please try again.");
                 } else {
-                    Thread t1 = new Thread(new NameSearch(phonebook, inpNa));
+                    ArrayList<String> result = new ArrayList<>();
+                    Thread t1 = new Thread(new NameSearch(phonebook, inpNa, result));
                     t1.start();
                     try {
                         t1.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    printResult(inpNa, result);
                 }
 
             } else if (inp.equals("2")) {
@@ -59,13 +63,15 @@ public class UI {
                 if (inpNu.equals(" ") || inpNu.equals("")) {
                     System.out.println("Please try again.");
                 } else {
-                    Thread t2 = new Thread(new NumberSearch(phonebook, inpNu));
+                    ArrayList<String> result = new ArrayList<>();
+                    Thread t2 = new Thread(new NumberSearch(phonebook, inpNu, result));
                     t2.start();
                     try {
                         t2.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    printResult(inpNu, result);
                 }
 
             } else if (inp.equals("3")) {
@@ -74,9 +80,10 @@ public class UI {
                 if (inpNaNu.equals(" ") || inpNaNu.equals("")) {
                     System.out.println("Please try again.");
                 } else {
+                    ArrayList<String> result = new ArrayList<>();
                     String[] p = inpNaNu.split("-");
-                    Thread t3 = new Thread(new NameSearch(phonebook, p[0]));
-                    Thread t5 = new Thread(new NumberSearch(phonebook, p[1]));
+                    Thread t3 = new Thread(new NameSearch(phonebook, p[0], result));
+                    Thread t5 = new Thread(new NumberSearch(phonebook, p[1], result));
                     t3.start();
                     t5.start();
                     try {
@@ -85,6 +92,7 @@ public class UI {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    printResult(inpNaNu, result);
                 }
 
             } else {
@@ -94,6 +102,27 @@ public class UI {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * checks if given result list is empty and print results
+     *
+     * @param input
+     * @param result
+     */
+    private void printResult(String input, ArrayList<String> result) {
+        if (result.isEmpty()) {
+            System.out.println("Search for " + input + " not successful. Please try again.");
+        } else {
+            for (String e : result) {
+                System.out.println(e);
+            }
+        }
+    }
+
+    private boolean isValid(String input) {
+        if (input.isEmpty()) return false;
+        if (input.matches())
     }
 
 

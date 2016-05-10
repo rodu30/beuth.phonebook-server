@@ -2,6 +2,8 @@ package search;
 
 import dataStructure.EntryPair;
 
+import java.util.ArrayList;
+
 /**
  * @className NameSearch
  * @author romanduhr
@@ -11,8 +13,8 @@ import dataStructure.EntryPair;
  */
 public class NumberSearch extends Search {
 
-    public NumberSearch(EntryPair[] phonebook, String input) {
-        super(phonebook, input);
+    public NumberSearch(EntryPair[] phonebook, String input, ArrayList<String> result) {
+        super(phonebook, input, result);
     }
 
     @Override
