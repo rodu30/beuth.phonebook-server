@@ -1,5 +1,7 @@
 import dataStructure.EntryPair;
-import ui.UI;
+import ui.Server;
+
+import java.io.IOException;
 
 /**
  * @className Main
@@ -21,11 +23,18 @@ public class Main {
                 new EntryPair("von Schulz", "4792")
         };
 
-        // Create UI and start infinite loop
-        UI ui = new UI(phonebook);
-        while(true) {
-            ui.execute();
-        }
+//        // Create UI and start infinite loop
+//        UI ui = new UI(phonebook);
+//        while(true) {
+//            ui.execute();
+//        }
 
+        // Create Server and start
+        Server server = new Server(phonebook, 3000);
+        try {
+            server.execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
