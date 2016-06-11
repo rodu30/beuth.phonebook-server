@@ -13,6 +13,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by romanduhr on 07.06.16.
@@ -36,9 +37,9 @@ public class Server {
      * @throws IOException
      */
     public void execute() throws IOException {
-
-//        host = InetAddress.getLocalHost().getHostName();
-        host = InetAddress.getLocalHost().getHostAddress();
+//        host = "localhost";
+        host = InetAddress.getLocalHost().getHostName();
+//        host = InetAddress.getLocalHost().getHostAddress();
         serverSocket = new ServerSocket(port);
         System.out.println("Welcome to the phone server at host: " + host + " and port: " + port);
         read();
@@ -46,7 +47,6 @@ public class Server {
 
     /**
      * reads HTTP requests
-     *
      */
     private void read() throws IOException {
         while (true) {
@@ -57,7 +57,7 @@ public class Server {
             // read input
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String line = in.readLine();
-            System.out.println("Incoming: '" + line + "'");
+            System.out.println("Incoming request: '" + line + "'");
 
             // ignore favicon
             if (line.startsWith("GET /favicon")) {
@@ -69,131 +69,281 @@ public class Server {
             // process request and send result
             if (line.contains("?")) {
                 System.out.println("HTTP request with query data");
+                HashMap<String, String> queryMap = new HashMap<>();
+
                 // get name & number
-                String[] query = line.split("=");
-                String[] s1 = query[1].split("&");
-                String inpName = URLDecoder.decode(s1[0], "UTF-8");
-                String[] s2 = query[2].split("&");
-                String inpNumber = URLDecoder.decode(s2[0], "UTF-8");
-                String quit = URLDecoder.decode(query[3], "UTF-8");
-                // start search
-                if (inpName != "" && inpNumber == "") {
-                    if (isValid(inpName)) {
-                        System.out.println("looking for " + inpName);
-                        ArrayList<String> result = new ArrayList<>();
-                        Thread t1 = new Thread(new NameSearch(phonebook, inpName, result));
-                        t1.start();
-                        try {
-                            t1.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        // TODO: zu HTML ändern
-                        printResult(inpName, result);
+                String[] q1 = line.split(" ");
+                String[] q2 = q1[1].substring(2).split("&");
+                for (String s1 : q2) {
+                    String[] s2 = s1.split("=");
+                    if (s2.length > 1) {
+                        queryMap.put(s2[0], URLDecoder.decode(s2[1], "UTF-8"));
                     } else {
-                        // TODO: zu HTML ändern
-                        printError();
+                        queryMap.put(s2[0], "");
                     }
-                } else if (inpName == "" && inpNumber != "") {
-                    if (isValid(inpNumber)) {
-                        System.out.println("looking for " + inpNumber);
-                        ArrayList<String> result = new ArrayList<>();
-                        Thread t1 = new Thread(new NumberSearch(phonebook, inpNumber, result));
-                        t1.start();
-                        try {
-                            t1.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        // TODO: zu HTML ändern
-                        printResult(inpNumber, result);
-                    } else {
-                        // TODO: zu HTML ändern
-                        printError();
-                    }
-                } else if (inpName != "" && inpNumber != "") {
-                    if (isValid(inpName + inpNumber)) {
-                        System.out.println("looking for " + inpName + " & " + inpNumber);
-                        ArrayList<String> result = new ArrayList<>();
-                        Thread t3 = new Thread(new NameSearch(phonebook, inpName, result));
-                        Thread t5 = new Thread(new NumberSearch(phonebook, inpNumber, result));
-                        t3.start();
-                        t5.start();
-                        try {
-                            t3.join();
-                            t5.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        // TODO: zu HTML ändern
-                        printResult(inpName + inpNumber, result);
-                    } else {
-                        // TODO: zu HTML ändern
-                        printError();
-                    }
-                } else if (quit == "Quit server") {
-                    printQuit();
-                    System.exit(0);
-                } else {
-                    // TODO: zu HTML ändern
-                    printError();
                 }
-            }
+                if (queryMap.containsKey("quit")) {                 //quit server
+                    sendQuitResponse(clientSocket);
+                    in.close();
+                    System.exit(0);
+//                } else if (queryMap.containsKey("search")) {         // start search
+                } else {
+                    if (!queryMap.get("name").isEmpty() && queryMap.get("number").isEmpty()) {
+                        String inpName = queryMap.get("name");
+                        if (isValid(inpName)) {
+                            System.out.println("looking for " + inpName);
+                            ArrayList<String> result = new ArrayList<>();
+                            Thread t1 = new Thread(new NameSearch(phonebook, inpName, result));
+                            t1.start();
+                            try {
+                                t1.join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            // TODO: zu HTML ändern
+                            sendResult(clientSocket, inpName, result);
+                            in.close();
+                        } else {
+                            // TODO: zu HTML ändern
+                            sendError(clientSocket);
+                            in.close();
+                        }
+                    } else if (queryMap.get("name").isEmpty() && !queryMap.get("number").isEmpty()) {
+                        String inpNumber = queryMap.get("number");
+                        if (isValid(inpNumber)) {
+                            System.out.println("looking for " + inpNumber);
+                            ArrayList<String> result = new ArrayList<>();
+                            Thread t1 = new Thread(new NumberSearch(phonebook, inpNumber, result));
+                            t1.start();
+                            try {
+                                t1.join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            // TODO: zu HTML ändern
+                            sendResult(clientSocket, inpNumber, result);
+                            in.close();
+                        } else {
+                            // TODO: zu HTML ändern
+                            sendError(clientSocket);
+                            in.close();
+                        }
+                    } else if (!queryMap.get("name").isEmpty() && !queryMap.get("number").isEmpty()) {
+                        String inpName = queryMap.get("name");
+                        String inpNumber = queryMap.get("number");
+                        if (isValid(inpName + inpNumber)) {
+                            System.out.println("looking for " + inpName + " & " + inpNumber);
+                            ArrayList<String> result = new ArrayList<>();
+                            Thread t3 = new Thread(new NameSearch(phonebook, inpName, result));
+                            Thread t5 = new Thread(new NumberSearch(phonebook, inpNumber, result));
+                            t3.start();
+                            t5.start();
+                            try {
+                                t3.join();
+                                t5.join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            // TODO: zu HTML ändern
+                            sendResult(clientSocket, inpName + inpNumber, result);
+                            in.close();
+                        } else {
+                            // TODO: zu HTML ändern
+                            sendError(clientSocket);
+                            in.close();
+                        }
+                    } else {
+                        // TODO: zu HTML ändern
+                        sendError(clientSocket);
+                        in.close();
+                    }
+                }
 
-
-                System.out.println("Request processed");
-//                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-                // Build HTTP response
-                out.println("HTTP/1.1 200 OK");              // Header
-                out.println("Content-Type: text/html");
-                out.println();
-                out.println("<!DOCTYPE html>");             // HTML
-                out.println("<html lang=\"en\">");
-                out.println("<head>");
-                out.println("<meta charset=\"UTF-8\">");
-                out.println("<title>My phone server</title>");
-                out.println("</head>");
-                out.println("<body>");
-                out.println("<h1>Welcome to Roman`s phone server</h1>");
-                out.println("<form method=get action=\"" + host + ":" + port + "\">");
-                out.println("Please enter a name:<br>");
-                out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
-                out.println("<br>");
-                out.println("Please enter a number:<br>");
-                out.println("<input type=\"text\" name=\"number\" value=\"123\">");
-                out.println("<br>");
-                out.println("<input type=\"submit\" value=\"Search\">");
-                out.println("<input type=\"submit\" name=\"quitserver\" value=\"Quit server\">");
-                out.println("</form>");
-                out.println("</body>");
-                out.println("</html>");
-                out.println();
-                out.flush();
-                out.close();
+            } else {
+                sendStartPage(clientSocket);
                 in.close();
-
+            }
         }
     }
 
-    private void printQuit() {
+    private void sendStartPage(Socket clientSocket) throws IOException {
+//        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+        System.out.println("Request processed");
+        // Build HTTP response
+        out.println("HTTP/1.1 200 OK");              // Header
+        out.println("Content-Type: text/html");
+        out.println();
+        out.println("<!DOCTYPE html>");             // HTML
+        out.println("<html lang=\"en\">");
+        out.println("<head>");
+        out.println("<meta charset=\"UTF-8\">");
+        out.println("<title>My phone server</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<h1>Welcome to Roman`s phone server</h1>");
+//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
+        out.println("<form method=get action=\"http://localhost:3000\">");
+        out.println("Please enter a name:<br>");
+        out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+        out.println("<br>");
+        out.println("Please enter a number:<br>");
+        out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+        out.println("<br>");
+//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
+        out.println("<input type=\"submit\" value=\"Search\">");
+        out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
+        out.println("</form>");
+        out.println("</body>");
+        out.println("</html>");
+        out.println();
+        out.flush();
+        out.close();
     }
 
+    private void sendQuitResponse(Socket clientSocket) throws IOException {
+        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+        // Build HTTP response
+        out.println("HTTP/1.1 200 OK");              // Header
+        out.println("Content-Type: text/html");
+        out.println();
+        out.println("<!DOCTYPE html>");             // HTML
+        out.println("<html lang=\"en\">");
+        out.println("<head>");
+        out.println("<meta charset=\"UTF-8\">");
+        out.println("<title>My phone server</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<h1>Welcome to Roman`s phone server</h1>");
+        out.println("Server is shutting down.");
+        out.println("</body>");
+        out.println("</html>");
+        out.println();
+        out.flush();
+        out.close();
+    }
 
     /**
-     * checks if given result list is empty and print results
+     * checks if given result list is empty and sends results to client
      *
      * @param input
      * @param result
      */
-    private void printResult(String input, ArrayList<String> result) {
+    private void sendResult(Socket clientSocket, String input, ArrayList<String> result) throws IOException {
+        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+        System.out.println("Request processed");
         if (result.isEmpty()) {
-            System.out.println("Search for " + input + " not successful. Please try again.");
+            System.out.println("Search for " + input + " not successful.");
+            // Build HTTP response
+            out.println("HTTP/1.1 200 OK");              // Header
+            out.println("Content-Type: text/html");
+            out.println();
+            out.println("<!DOCTYPE html>");             // HTML
+            out.println("<html lang=\"en\">");
+            out.println("<head>");
+            out.println("<meta charset=\"UTF-8\">");
+            out.println("<title>My phone server</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Welcome to Roman`s phone server</h1>");
+//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
+            out.println("<form method=get action=\"http://localhost:3000\">");
+            out.println("Please enter a name:<br>");
+            out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+            out.println("<br>");
+            out.println("Please enter a number:<br>");
+            out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+            out.println("<br>");
+            out.println("<p style=\"color:red\">Search for '" + input + "' not successful. Please try again.</p>");
+            out.println("<br>");
+//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
+            out.println("<input type=\"submit\" value=\"Search\">");
+            out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
+            out.println("</form>");
+            out.println("</body>");
+            out.println("</html>");
+            out.println();
+            out.flush();
+            out.close();
         } else {
+            System.out.println("Search for " + input + " successful.");
+            // Build HTTP response
+            out.println("HTTP/1.1 200 OK");              // Header
+            out.println("Content-Type: text/html");
+            out.println();
+            out.println("<!DOCTYPE html>");             // HTML
+            out.println("<html lang=\"en\">");
+            out.println("<head>");
+            out.println("<meta charset=\"UTF-8\">");
+            out.println("<title>My phone server</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Welcome to Roman`s phone server</h1>");
+//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
+            out.println("<form method=get action=\"http://localhost:3000\">");
+            out.println("Please enter a name:<br>");
+            out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+            out.println("<br>");
+            out.println("Please enter a number:<br>");
+            out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+            out.println("<br>");
+            out.println("<p style=\"color:green\">Result:<br>");
             for (String e : result) {
-                System.out.println(e);
+                out.println(e + "<br>");
             }
+            out.println("<br>");
+//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
+            out.println("<input type=\"submit\" value=\"Search\">");
+            out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
+            out.println("</form>");
+            out.println("</body>");
+            out.println("</html>");
+            out.println();
+            out.flush();
+            out.close();
         }
+    }
+
+    /**
+     * sends error message to client
+     */
+    private void sendError(Socket clientSocket) throws IOException {
+        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+        System.out.println("Request processed");
+        // Build HTTP response
+        out.println("HTTP/1.1 200 OK");              // Header
+        out.println("Content-Type: text/html");
+        out.println();
+        out.println("<!DOCTYPE html>");             // HTML
+        out.println("<html lang=\"en\">");
+        out.println("<head>");
+        out.println("<meta charset=\"UTF-8\">");
+        out.println("<title>My phone server</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<h1>Welcome to Roman`s phone server</h1>");
+//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
+        out.println("<form method=get action=\"http://localhost:3000\">");
+        out.println("Please enter a name:<br>");
+        out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+        out.println("<br>");
+        out.println("Please enter a number:<br>");
+        out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+        out.println("<br>");
+        out.println("<p style=\"color:red\">Not a valid input, please try again.</p>");
+        out.println("<br>");
+//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
+        out.println("<input type=\"submit\" value=\"Search\">");
+        out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
+        out.println("</form>");
+        out.println("</body>");
+        out.println("</html>");
+        out.println();
+        out.flush();
+        out.close();
     }
 
     /**
@@ -208,13 +358,6 @@ public class Server {
         } else {
             return true;
         }
-    }
-
-    /**
-     * prints error message
-     */
-    private void printError() {
-        System.out.println("Not a valid input, please try again.");
     }
 
 }

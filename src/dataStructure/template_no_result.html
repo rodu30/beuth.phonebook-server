@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My phone server</title>
+</head>
+<body>
+<h1>Welcome to Roman`s phone server</h1>
+<form method=get action="http://localhost:3000">
+    Please enter a name:<br>
+    <input type="text" name="name" value="Maier">
+    <br>
+    Please enter a number:<br>
+    <input type="text" name="number" value="123">
+    <br>
+    <input type="submit" name="search" value="Search">
+    <input type="submit" name="quit" value="Quit server">
+</form>
+<p style="color:red">Search for " + input + " not successful. Please try again.</p>
+</body>
+</html>
