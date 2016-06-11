@@ -1,5 +1,5 @@
 import dataStructure.EntryPair;
-import ui.Server;
+import server.HttpServer;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import java.io.IOException;
  * @author romanduhr
  * @date   30.04.16
  *
- *  Main class creates phonebook and starts ui threat.
+ *  Main class creates phonebook and starts server threat.
  */
 public class Main {
 
@@ -23,14 +23,18 @@ public class Main {
                 new EntryPair("von Schulz", "4792")
         };
 
-//        // Create UI and start infinite loop
-//        UI ui = new UI(phonebook);
+//        // Create ConsoleUI and start infinite loop
+//        ConsoleUI server = new ConsoleUI(phonebook);
 //        while(true) {
-//            ui.execute();
+//            server.execute();
 //        }
 
-        // Create Server and start
-        Server server = new Server(phonebook, 3000);
+        // Create HttpServer and start
+        int port = 3000;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        HttpServer server = new HttpServer(phonebook, port);
         try {
             server.execute();
         } catch (IOException e) {

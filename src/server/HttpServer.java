@@ -1,4 +1,4 @@
-package ui;
+package server;
 
 import dataStructure.EntryPair;
 import search.NameSearch;
@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -16,29 +15,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by romanduhr on 07.06.16.
+ * @className HttpServer
+ * @author romanduhr
+ * @date   07.06.16
+ *
+ *  Class creates a HTTP server and establishes a connection with an HTTP client and serves html interface.
  */
-public class Server {
+public class HttpServer {
 
     private EntryPair[] phonebook;
     private int port;
     private ServerSocket serverSocket;
     private String host;
 
-
-    public Server(EntryPair[] phonebook, int port) {
+    public HttpServer(EntryPair[] phonebook, int port) {
         this.phonebook = phonebook;
         this.port = port;
     }
 
     /**
-     * starts server, ports etc
+     * starts server with given port
      *
      * @throws IOException
      */
     public void execute() throws IOException {
-//        host = "localhost";
-        host = InetAddress.getLocalHost().getHostName();
+        host = "http://localhost";
+//        host = InetAddress.getLocalHost().getHostName();          Adresse benutzen
 //        host = InetAddress.getLocalHost().getHostAddress();
         serverSocket = new ServerSocket(port);
         System.out.println("Welcome to the phone server at host: " + host + " and port: " + port);
@@ -46,11 +48,12 @@ public class Server {
     }
 
     /**
-     * reads HTTP requests
+     * reads HTTP requests and responds with page, search results etc.
+     *
+     * @throws IOException
      */
     private void read() throws IOException {
         while (true) {
-
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connected and waiting for requests");
 
@@ -63,14 +66,13 @@ public class Server {
             if (line.startsWith("GET /favicon")) {
                 System.out.println("Favicon request");
                 in.close();
-                continue;           // jump to next request ??
+                continue;
             }
 
             // process request and send result
             if (line.contains("?")) {
                 System.out.println("HTTP request with query data");
                 HashMap<String, String> queryMap = new HashMap<>();
-
                 // get name & number
                 String[] q1 = line.split(" ");
                 String[] q2 = q1[1].substring(2).split("&");
@@ -86,8 +88,7 @@ public class Server {
                     sendQuitResponse(clientSocket);
                     in.close();
                     System.exit(0);
-//                } else if (queryMap.containsKey("search")) {         // start search
-                } else {
+                } else {                                            // start search
                     if (!queryMap.get("name").isEmpty() && queryMap.get("number").isEmpty()) {
                         String inpName = queryMap.get("name");
                         if (isValid(inpName)) {
@@ -100,11 +101,9 @@ public class Server {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            // TODO: zu HTML ändern
                             sendResult(clientSocket, inpName, result);
                             in.close();
                         } else {
-                            // TODO: zu HTML ändern
                             sendError(clientSocket);
                             in.close();
                         }
@@ -120,11 +119,9 @@ public class Server {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            // TODO: zu HTML ändern
                             sendResult(clientSocket, inpNumber, result);
                             in.close();
                         } else {
-                            // TODO: zu HTML ändern
                             sendError(clientSocket);
                             in.close();
                         }
@@ -144,16 +141,13 @@ public class Server {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            // TODO: zu HTML ändern
                             sendResult(clientSocket, inpName + inpNumber, result);
                             in.close();
                         } else {
-                            // TODO: zu HTML ändern
                             sendError(clientSocket);
                             in.close();
                         }
                     } else {
-                        // TODO: zu HTML ändern
                         sendError(clientSocket);
                         in.close();
                     }
@@ -166,8 +160,13 @@ public class Server {
         }
     }
 
+    /**
+     * send normal search form
+     *
+     * @param clientSocket
+     * @throws IOException
+     */
     private void sendStartPage(Socket clientSocket) throws IOException {
-//        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         // Build HTTP response
@@ -182,15 +181,13 @@ public class Server {
         out.println("</head>");
         out.println("<body>");
         out.println("<h1>Welcome to Roman`s phone server</h1>");
-//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
-        out.println("<form method=get action=\"http://localhost:3000\">");
+        out.println("<form method=get action=\"" + host + ":" + port + "\">");
         out.println("Please enter a name:<br>");
         out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
         out.println("<br>");
         out.println("Please enter a number:<br>");
         out.println("<input type=\"text\" name=\"number\" value=\"123\">");
         out.println("<br>");
-//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
         out.println("<input type=\"submit\" value=\"Search\">");
         out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
         out.println("</form>");
@@ -201,8 +198,13 @@ public class Server {
         out.close();
     }
 
+    /**
+     * sends confirmation that server is shutting down
+     *
+     * @param clientSocket
+     * @throws IOException
+     */
     private void sendQuitResponse(Socket clientSocket) throws IOException {
-        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         // Build HTTP response
         out.println("HTTP/1.1 200 OK");              // Header
@@ -216,7 +218,7 @@ public class Server {
         out.println("</head>");
         out.println("<body>");
         out.println("<h1>Welcome to Roman`s phone server</h1>");
-        out.println("Server is shutting down.");
+        out.println("HttpServer is shutting down.");
         out.println("</body>");
         out.println("</html>");
         out.println();
@@ -227,11 +229,12 @@ public class Server {
     /**
      * checks if given result list is empty and sends results to client
      *
+     * @param clientSocket
      * @param input
      * @param result
+     * @throws IOException
      */
     private void sendResult(Socket clientSocket, String input, ArrayList<String> result) throws IOException {
-        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         if (result.isEmpty()) {
@@ -248,17 +251,15 @@ public class Server {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Welcome to Roman`s phone server</h1>");
-//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
-            out.println("<form method=get action=\"http://localhost:3000\">");
+            out.println("<form method=get action=\"" + host + ":" + port + "\">");
             out.println("Please enter a name:<br>");
-            out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+            out.println("<input type=\"text\" name=\"name\">");
             out.println("<br>");
             out.println("Please enter a number:<br>");
-            out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+            out.println("<input type=\"text\" name=\"number\">");
             out.println("<br>");
             out.println("<p style=\"color:red\">Search for '" + input + "' not successful. Please try again.</p>");
             out.println("<br>");
-//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
             out.println("<input type=\"submit\" value=\"Search\">");
             out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
             out.println("</form>");
@@ -281,20 +282,18 @@ public class Server {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Welcome to Roman`s phone server</h1>");
-//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
-            out.println("<form method=get action=\"http://localhost:3000\">");
+            out.println("<form method=get action=\"" + host + ":" + port + "\">");
             out.println("Please enter a name:<br>");
-            out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+            out.println("<input type=\"text\" name=\"name\">");
             out.println("<br>");
             out.println("Please enter a number:<br>");
-            out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+            out.println("<input type=\"text\" name=\"number\">");
             out.println("<br>");
             out.println("<p style=\"color:green\">Result:<br>");
             for (String e : result) {
                 out.println(e + "<br>");
             }
             out.println("<br>");
-//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
             out.println("<input type=\"submit\" value=\"Search\">");
             out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
             out.println("</form>");
@@ -308,9 +307,11 @@ public class Server {
 
     /**
      * sends error message to client
+     *
+     * @param clientSocket
+     * @throws IOException
      */
     private void sendError(Socket clientSocket) throws IOException {
-        //        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         // Build HTTP response
@@ -325,17 +326,15 @@ public class Server {
         out.println("</head>");
         out.println("<body>");
         out.println("<h1>Welcome to Roman`s phone server</h1>");
-//                out.println("<form method=get action=\"" + host + ":" + port + "\">");
-        out.println("<form method=get action=\"http://localhost:3000\">");
+        out.println("<form method=get action=\"" + host + ":" + port + "\">");
         out.println("Please enter a name:<br>");
-        out.println("<input type=\"text\" name=\"name\" value=\"Maier\">");
+        out.println("<input type=\"text\" name=\"name\">");
         out.println("<br>");
         out.println("Please enter a number:<br>");
-        out.println("<input type=\"text\" name=\"number\" value=\"123\">");
+        out.println("<input type=\"text\" name=\"number\">");
         out.println("<br>");
         out.println("<p style=\"color:red\">Not a valid input, please try again.</p>");
         out.println("<br>");
-//                out.println("<input type=\"submit\" name=\"search\" value=\"Search\">");
         out.println("<input type=\"submit\" value=\"Search\">");
         out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
         out.println("</form>");
@@ -361,4 +360,3 @@ public class Server {
     }
 
 }
-

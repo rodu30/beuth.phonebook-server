@@ -1,4 +1,4 @@
-package ui;
+package server;
 
 import dataStructure.EntryPair;
 import search.NameSearch;
@@ -10,18 +10,18 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
- * @className UI
+ * @className ConsoleUI
  * @author romanduhr
  * @date   30.04.16
  *
  * User Interface for communication with user.
  */
-public class UI {
+public class ConsoleUI {
 
     private EntryPair[] phonebook;
     private BufferedReader in;
 
-    public UI(EntryPair[] phonebook) {
+    public ConsoleUI(EntryPair[] phonebook) {
         System.out.println("Welcome to the phone server");
         this.phonebook = phonebook;
         this.in = new BufferedReader(new InputStreamReader(System.in));
