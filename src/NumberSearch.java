@@ -1,7 +1,3 @@
-package search;
-
-import dataStructure.EntryPair;
-
 import java.util.ArrayList;
 
 /**

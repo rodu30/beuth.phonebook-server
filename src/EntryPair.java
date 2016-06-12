@@ -1,5 +1,3 @@
-package dataStructure;
-
 /**
  * @className EntryPair
  * @author romanduhr

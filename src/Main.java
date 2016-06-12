@@ -1,6 +1,3 @@
-import dataStructure.EntryPair;
-import server.HttpServer;
-
 import java.io.IOException;
 
 /**
@@ -22,12 +19,6 @@ public class Main {
                 new EntryPair("Meier", "0816"),
                 new EntryPair("von Schulz", "4792")
         };
-
-//        // Create ConsoleUI and start infinite loop
-//        ConsoleUI server = new ConsoleUI(phonebook);
-//        while(true) {
-//            server.execute();
-//        }
 
         // Create HttpServer and start
         int port = 3000;
