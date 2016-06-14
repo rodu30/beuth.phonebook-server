@@ -68,8 +68,8 @@ public class HttpServer {
             if (line.contains("?")) {
                 System.out.println("HTTP request with query data");
                 HashMap<String, String> queryMap = new HashMap<>();
-                // get name & number
-                String[] q1 = line.split(" ");
+
+                String[] q1 = line.split(" ");                                  // get name & number
                 String[] q2 = q1[1].substring(2).split("&");
                 for (String s1 : q2) {
                     String[] s2 = s1.split("=");
@@ -79,10 +79,14 @@ public class HttpServer {
                         queryMap.put(s2[0], "");
                     }
                 }
+
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);
                     in.close();
                     System.exit(0);
+                } else if (queryMap.containsKey("reset")) {
+                    sendStartPage(clientSocket);
+                    in.close();
                 } else {                                            // start search
                     if (!queryMap.get("name").isEmpty() && queryMap.get("number").isEmpty()) {
                         String inpName = queryMap.get("name");
@@ -184,6 +188,7 @@ public class HttpServer {
         out.println("<input type=\"text\" name=\"number\" value=\"123\">");
         out.println("<br>");
         out.println("<input type=\"submit\" value=\"Search\">");
+        out.println("<input type=\"submit\" name=\"reset\" value=\"Reset form\">");
         out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
         out.println("</form>");
         out.println("</body>");
@@ -256,6 +261,7 @@ public class HttpServer {
             out.println("<p style=\"color:red\">Search for '" + input + "' not successful. Please try again.</p>");
             out.println("<br>");
             out.println("<input type=\"submit\" value=\"Search\">");
+            out.println("<input type=\"submit\" name=\"reset\" value=\"Reset form\">");
             out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
             out.println("</form>");
             out.println("</body>");
@@ -290,6 +296,7 @@ public class HttpServer {
             }
             out.println("<br>");
             out.println("<input type=\"submit\" value=\"Search\">");
+            out.println("<input type=\"submit\" name=\"reset\" value=\"Reset form\">");
             out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
             out.println("</form>");
             out.println("</body>");
@@ -331,6 +338,7 @@ public class HttpServer {
         out.println("<p style=\"color:red\">Not a valid input, please try again.</p>");
         out.println("<br>");
         out.println("<input type=\"submit\" value=\"Search\">");
+        out.println("<input type=\"submit\" name=\"reset\" value=\"Reset form\">");
         out.println("<input type=\"submit\" name=\"quit\" value=\"Quit server\">");
         out.println("</form>");
         out.println("</body>");
