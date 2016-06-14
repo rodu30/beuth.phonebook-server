@@ -32,7 +32,7 @@ public class Main {
             } else if (args[1].equals("ha")) {
                 host = InetAddress.getLocalHost().getHostAddress();
             } else if (!args[1].isEmpty() && !args[1].equals("hn") && !args[1].equals("ha")) {
-                host = args[1];
+                host = "http://" + args[1];
             }
         }
 
