@@ -22,10 +22,11 @@ public class HttpServer {
     private ServerSocket serverSocket;
     private String host;
 
-    public HttpServer(EntryPair[] phonebook, int port) {
+    public HttpServer(EntryPair[] phonebook, int port, String host) {
         this.phonebook = phonebook;
         this.port = port;
-    }
+        this.host = host;
+     }
 
     /**
      * starts server with given port
@@ -33,7 +34,7 @@ public class HttpServer {
      * @throws IOException
      */
     public void execute() throws IOException {
-        host = "http://localhost";
+//        host = "http://localhost";
 //        host = InetAddress.getLocalHost().getHostName();          Adresse benutzen
 //        host = InetAddress.getLocalHost().getHostAddress();
         serverSocket = new ServerSocket(port);
