@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,7 +14,8 @@ import java.util.HashMap;
  * @author romanduhr
  * @date   07.06.16
  *
- *  Class creates a HTTP server and establishes a connection with an HTTP client and serves html interface.
+ *  Class creates a HTTP server and establishes a connection with an HTTP client,
+ *  serves html interface and sends data to dept server (RMI client)
  */
 public class HttpServer {
 
@@ -33,7 +35,7 @@ public class HttpServer {
      *
      * @throws IOException
      */
-    public void execute() throws IOException {
+    public void execute() throws Exception {
 //        host = "http://localhost";
 //        host = InetAddress.getLocalHost().getHostName();          Adresse benutzen
 //        host = InetAddress.getLocalHost().getHostAddress();
@@ -47,7 +49,7 @@ public class HttpServer {
      *
      * @throws IOException
      */
-    private void read() throws IOException {
+    private void read() throws Exception {
         while (true) {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connected and waiting for requests");
@@ -80,9 +82,13 @@ public class HttpServer {
                     }
                 }
 
+                // Access to remote object
+                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("rmi://compute/MyService");
+
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);
                     in.close();
+                    remoteSearch.quit();
                     System.exit(0);
                 } else if (queryMap.containsKey("reset")) {
                     sendStartPage(clientSocket);
@@ -91,15 +97,7 @@ public class HttpServer {
                     if (!queryMap.get("name").isEmpty() && queryMap.get("number").isEmpty()) {
                         String inpName = queryMap.get("name");
                         if (isValid(inpName)) {
-                            System.out.println("looking for " + inpName);
-                            ArrayList<String> result = new ArrayList<>();
-                            Thread t1 = new Thread(new NameSearch(phonebook, inpName, result));
-                            t1.start();
-                            try {
-                                t1.join();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            ArrayList<String> result = remoteSearch.getNameSearchResult(inpName);
                             sendResult(clientSocket, inpName, result);
                             in.close();
                         } else {
@@ -109,15 +107,7 @@ public class HttpServer {
                     } else if (queryMap.get("name").isEmpty() && !queryMap.get("number").isEmpty()) {
                         String inpNumber = queryMap.get("number");
                         if (isValid(inpNumber)) {
-                            System.out.println("looking for " + inpNumber);
-                            ArrayList<String> result = new ArrayList<>();
-                            Thread t1 = new Thread(new NumberSearch(phonebook, inpNumber, result));
-                            t1.start();
-                            try {
-                                t1.join();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            ArrayList<String> result = remoteSearch.getNumberSearchResult(inpNumber);
                             sendResult(clientSocket, inpNumber, result);
                             in.close();
                         } else {
@@ -128,18 +118,7 @@ public class HttpServer {
                         String inpName = queryMap.get("name");
                         String inpNumber = queryMap.get("number");
                         if (isValid(inpName + inpNumber)) {
-                            System.out.println("looking for " + inpName + " & " + inpNumber);
-                            ArrayList<String> result = new ArrayList<>();
-                            Thread t3 = new Thread(new NameSearch(phonebook, inpName, result));
-                            Thread t5 = new Thread(new NumberSearch(phonebook, inpNumber, result));
-                            t3.start();
-                            t5.start();
-                            try {
-                                t3.join();
-                                t5.join();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            ArrayList<String> result = remoteSearch.getNaNuSearchResult(inpName, inpNumber);
                             sendResult(clientSocket, inpName + inpNumber, result);
                             in.close();
                         } else {
@@ -218,7 +197,7 @@ public class HttpServer {
         out.println("</head>");
         out.println("<body>");
         out.println("<h1>Welcome to Roman`s phone server</h1>");
-        out.println("HttpServer is shutting down.");
+        out.println("HttpServer & DepartmentServer is shutting down.");
         out.println("</body>");
         out.println("</html>");
         out.println();
