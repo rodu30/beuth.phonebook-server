@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -19,26 +20,34 @@ import java.util.HashMap;
  */
 public class HttpServer {
 
-    private EntryPair[] phonebook;
-    private int port;
-    private ServerSocket serverSocket;
-    private String host;
+    private static int port;
+    private static String host;
+    private static ServerSocket serverSocket;
 
-    public HttpServer(EntryPair[] phonebook, int port, String host) {
-        this.phonebook = phonebook;
-        this.port = port;
-        this.host = host;
-     }
+    public HttpServer() {
+    }
 
     /**
      * starts server with given port
      *
      * @throws IOException
      */
-    public void execute() throws Exception {
-//        host = "http://localhost";
-//        host = InetAddress.getLocalHost().getHostName();          Adresse benutzen
+    public static void main(String[] args) throws Exception {
+
+        port = 3000;
+        host = "http://localhost";
 //        host = InetAddress.getLocalHost().getHostAddress();
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+            if (args[1].equals("hn")) {
+                host = InetAddress.getLocalHost().getHostName();
+            } else if (args[1].equals("ha")) {
+                host = InetAddress.getLocalHost().getHostAddress();
+            } else if (!args[1].isEmpty() && !args[1].equals("hn") && !args[1].equals("ha")) {
+                host = "http://" + args[1];
+            }
+        }
+        // Create HttpServer and start
         serverSocket = new ServerSocket(port);
         System.out.println("Welcome to the phone server at host: " + host + " and port: " + port);
         read();
@@ -49,7 +58,7 @@ public class HttpServer {
      *
      * @throws IOException
      */
-    private void read() throws Exception {
+    private static void read() throws Exception {
         while (true) {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connected and waiting for requests");
@@ -84,6 +93,18 @@ public class HttpServer {
 
                 // Access to remote object
                 IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("rmi://compute/MyService");
+//                String host = (args.length < 1) ? null : args[0];
+//                try {
+//                    Registry registry = LocateRegistry.getRegistry(host);
+//                    Hello stub = (Hello) registry.lookup("Hello");
+//                    String response = stub.sayHello();
+//                    System.out.println("response: " + response);
+//                } catch (Exception e) {
+//                    System.err.println("Client exception: " + e.toString());
+//                    e.printStackTrace();
+//                }
+
+
 
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);
@@ -144,7 +165,7 @@ public class HttpServer {
      * @param clientSocket
      * @throws IOException
      */
-    private void sendStartPage(Socket clientSocket) throws IOException {
+    private static void sendStartPage(Socket clientSocket) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         // Build HTTP response
@@ -183,7 +204,7 @@ public class HttpServer {
      * @param clientSocket
      * @throws IOException
      */
-    private void sendQuitResponse(Socket clientSocket) throws IOException {
+    private static void sendQuitResponse(Socket clientSocket) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         // Build HTTP response
         out.println("HTTP/1.1 200 OK");              // Header
@@ -213,7 +234,7 @@ public class HttpServer {
      * @param result
      * @throws IOException
      */
-    private void sendResult(Socket clientSocket, String input, ArrayList<String> result) throws IOException {
+    private static void sendResult(Socket clientSocket, String input, ArrayList<String> result) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         if (result.isEmpty()) {
@@ -292,7 +313,7 @@ public class HttpServer {
      * @param clientSocket
      * @throws IOException
      */
-    private void sendError(Socket clientSocket) throws IOException {
+    private static void sendError(Socket clientSocket) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
         System.out.println("Request processed");
         // Build HTTP response
@@ -333,7 +354,7 @@ public class HttpServer {
      * @param input
      * @return boolean
      */
-    private boolean isValid(String input) {
+    private static boolean isValid(String input) {
         if (input.isEmpty() || input.matches("\\s+") || input.matches("\\t+")) {
             return false;
         } else {

@@ -12,7 +12,18 @@ import java.util.ArrayList;
  */
 public class DeptServer implements IRemoteSearch {
 
+    private EntryPair[] phonebook;
+
     public DeptServer() {
+
+        // Create example phonebook
+        phonebook = new EntryPair[]{
+                new EntryPair("Meier", "4711"),
+                new EntryPair("Schmitt", "0815"),
+                new EntryPair("Müller", "4711"),
+                new EntryPair("Meier", "0816"),
+                new EntryPair("von Schulz", "4792")
+        };
     }
 
     @Override
@@ -78,12 +89,12 @@ public class DeptServer implements IRemoteSearch {
         try {
             DeptServer obj = new DeptServer();
 //            IRemoteSearch stub = (IRemoteSearch) UnicastRemoteObject.exportObject(obj, 0);
+
             // Bind the remote object's stub in the registry
 //            Registry registry = LocateRegistry.getRegistry();
 //            registry.bind("Hello", stub);
             LocateRegistry.createRegistry(1099);     // Port 1099
-            // Anmeldung des Dienstes mit rmi://Serverhostname/Eindeutige Bezeichnung des Dienstes
-            Naming.rebind("rmi://compute/MyService", obj);
+            Naming.rebind("rmi://compute/MyService", obj); // Anmeldung des Dienstes mit rmi://Serverhostname/Eindeutige Bezeichnung des Dienstes
 
             System.out.println("Server ready and waiting for RMIs");
         } catch (Exception e) {
