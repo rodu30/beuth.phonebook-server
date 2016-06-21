@@ -50,15 +50,8 @@ public class HttpServer {
         // Create HttpServer and start
         serverSocket = new ServerSocket(port);
         System.out.println("Welcome to the phone server at host: " + host + " and port: " + port);
-        read();
-    }
 
-    /**
-     * reads HTTP requests and responds with page, search results etc.
-     *
-     * @throws IOException
-     */
-    private static void read() throws Exception {
+        // reads HTTP requests and responds with page, search results etc.
         while (true) {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connected and waiting for requests");
@@ -91,25 +84,14 @@ public class HttpServer {
                     }
                 }
 
-                // Access to remote object
-                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("rmi://compute/MyService");
-//                String host = (args.length < 1) ? null : args[0];
-//                try {
-//                    Registry registry = LocateRegistry.getRegistry(host);
-//                    Hello stub = (Hello) registry.lookup("Hello");
-//                    String response = stub.sayHello();
-//                    System.out.println("response: " + response);
-//                } catch (Exception e) {
-//                    System.err.println("Client exception: " + e.toString());
-//                    e.printStackTrace();
-//                }
-
-
+                // Access to remote RMI server
+                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("server");
 
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);
                     in.close();
                     remoteSearch.quit();
+                    System.out.println("passed to RMI");
                     System.exit(0);
                 } else if (queryMap.containsKey("reset")) {
                     sendStartPage(clientSocket);
@@ -119,6 +101,7 @@ public class HttpServer {
                         String inpName = queryMap.get("name");
                         if (isValid(inpName)) {
                             ArrayList<String> result = remoteSearch.getNameSearchResult(inpName);
+                            System.out.println("passed to RMI");
                             sendResult(clientSocket, inpName, result);
                             in.close();
                         } else {
@@ -129,6 +112,7 @@ public class HttpServer {
                         String inpNumber = queryMap.get("number");
                         if (isValid(inpNumber)) {
                             ArrayList<String> result = remoteSearch.getNumberSearchResult(inpNumber);
+                            System.out.println("passed to RMI");
                             sendResult(clientSocket, inpNumber, result);
                             in.close();
                         } else {
@@ -140,6 +124,7 @@ public class HttpServer {
                         String inpNumber = queryMap.get("number");
                         if (isValid(inpName + inpNumber)) {
                             ArrayList<String> result = remoteSearch.getNaNuSearchResult(inpName, inpNumber);
+                            System.out.println("passed to RMI");
                             sendResult(clientSocket, inpName + inpNumber, result);
                             in.close();
                         } else {
