@@ -48,7 +48,6 @@ public class HttpServer {
                 host = "http://" + args[1];
             }
         }
-        // Create HttpServer and start
         serverSocket = new ServerSocket(port);
         System.out.println("Welcome to the phone server at host: " + host + " and port: " + port);
 
@@ -86,7 +85,8 @@ public class HttpServer {
                 }
 
                 // Access to remote RMI server
-                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("server");
+                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("server"); //TODO testen mit entferntem Rechner
+//                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("//127.0.0.1/server"); // localhost
 
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);

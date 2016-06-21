@@ -1,6 +1,8 @@
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 /**
@@ -10,12 +12,12 @@ import java.util.ArrayList;
  *
  *  Class creates a server for a department phone book, which receives a data from HttpServer via RMI interface (RMI server).
  */
-public class DeptServer implements IRemoteSearch {
+public class DeptServer extends UnicastRemoteObject implements IRemoteSearch {
 
     private EntryPair[] phonebook;
 
-    public DeptServer() {
-
+    public DeptServer() throws RemoteException {
+        super();
         // Create example phonebook
         phonebook = new EntryPair[]{
                 new EntryPair("Meier", "4711"),
@@ -38,6 +40,7 @@ public class DeptServer implements IRemoteSearch {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("search done");
         return result;
     }
 
@@ -53,6 +56,7 @@ public class DeptServer implements IRemoteSearch {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("search done");
         return result;
     }
 
@@ -71,11 +75,13 @@ public class DeptServer implements IRemoteSearch {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("search done");
         return result;
     }
 
     @Override
     public void quit() throws RemoteException {
+        System.out.println("start quitting department server");
         System.exit(0);
     }
 
@@ -87,16 +93,13 @@ public class DeptServer implements IRemoteSearch {
     public static void main(String args[]) {
 
         try {
-            DeptServer obj = new DeptServer();
-//            IRemoteSearch stub = (IRemoteSearch) UnicastRemoteObject.exportObject(obj, 0);
+            DeptServer server = new DeptServer();
 
-            // Bind the remote object's stub in the registry
-//            Registry registry = LocateRegistry.getRegistry();
-//            registry.bind("Hello", stub);
-            LocateRegistry.createRegistry(1099);     // Port 1099
-            Naming.rebind("rmi://compute/MyService", obj); // Anmeldung des Dienstes mit rmi://Serverhostname/Eindeutige Bezeichnung des Dienstes
+            LocateRegistry.createRegistry(Registry.REGISTRY_PORT);     // Port 1099
+//            Naming.rebind("rmi://compute/MyService", server); // Anmeldung des Dienstes mit rmi://Serverhostname/Eindeutige Bezeichnung des Dienstes
+            Naming.rebind("server", server); //TODO testen mit entferntem Rechner (funktioniert lokal nur, wenn gleicher Name übergeben wird, wie in Client)
 
-            System.out.println("Server ready and waiting for RMIs");
+            System.out.println("Server ready and waiting for RMIs on port " + Registry.REGISTRY_PORT);
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
