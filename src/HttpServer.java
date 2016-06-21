@@ -28,9 +28,10 @@ public class HttpServer {
     }
 
     /**
-     * starts server with given port
+     * main starts server with given port
      *
-     * @throws IOException
+     * @throws Exception
+     * @param args
      */
     public static void main(String[] args) throws Exception {
 

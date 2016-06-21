@@ -3,7 +3,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 /**
- * Created by romanduhr on 21.06.16.
+ * @className IRemoteSearch
+ * @author romanduhr
+ * @date   21.06.16
+ *
+ *  Interface for RMI server
  */
 public interface IRemoteSearch extends Remote {
 
@@ -15,11 +19,17 @@ public interface IRemoteSearch extends Remote {
     ArrayList<String> getNameSearchResult(String s) throws RemoteException;
 
     /**
+     *
+     * remote method
+     *
      * @throws RemoteException
      */
     ArrayList<String> getNumberSearchResult(String s) throws RemoteException;
 
     /**
+     *
+     * remote method
+     *
      * @throws RemoteException
      */
     ArrayList<String> getNaNuSearchResult(String na, String nu) throws RemoteException;
