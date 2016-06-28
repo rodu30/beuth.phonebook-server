@@ -38,7 +38,9 @@ public class HttpServer {
         port = 3000;
         host = "http://localhost";
 //        host = InetAddress.getLocalHost().getHostAddress();
-        if (args.length > 0) {
+        if (args.length == 1) {
+            port = Integer.parseInt(args[0]);
+        } else if(args.length == 2) {
             port = Integer.parseInt(args[0]);
             if (args[1].equals("hn")) {
                 host = InetAddress.getLocalHost().getHostName();
@@ -85,7 +87,7 @@ public class HttpServer {
                 }
 
                 // Access to remote RMI server
-                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("server"); //TODO testen mit entferntem Rechner
+                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("myserver"); //TODO testen mit entferntem Rechner
 //                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("//127.0.0.1/server"); // localhost
 
                 if (queryMap.containsKey("quit")) {                 //quit server
