@@ -96,9 +96,7 @@ public class DeptServer extends UnicastRemoteObject implements IRemoteSearch {
             DeptServer server = new DeptServer();
 
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);     // Port 1099
-//            Naming.rebind("rmi://compute/MyService", server); // Anmeldung des Dienstes mit rmi://Serverhostname/Eindeutige Bezeichnung des Dienstes
-            Naming.rebind("myserver", server); //TODO testen mit entferntem Rechner (funktioniert lokal nur, wenn gleicher Name übergeben wird, wie in Client)
-
+            Naming.rebind("myserver", server);
             System.out.println("Server ready and waiting for RMIs on port " + Registry.REGISTRY_PORT);
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());

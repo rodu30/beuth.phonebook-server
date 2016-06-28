@@ -2,11 +2,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URLDecoder;
+import java.net.*;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,7 +31,7 @@ public class HttpServer {
      * @throws Exception
      * @param args
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
 
         port = 3000;
         host = "http://localhost";
@@ -43,9 +41,9 @@ public class HttpServer {
         } else if(args.length == 2) {
             port = Integer.parseInt(args[0]);
             if (args[1].equals("hn")) {
-                host = InetAddress.getLocalHost().getHostName();
+                host = "http://" + InetAddress.getLocalHost().getHostName();
             } else if (args[1].equals("ha")) {
-                host = InetAddress.getLocalHost().getHostAddress();
+                host = "http://" + InetAddress.getLocalHost().getHostAddress();
             } else if (!args[1].isEmpty() && !args[1].equals("hn") && !args[1].equals("ha")) {
                 host = "http://" + args[1];
             }
@@ -87,8 +85,13 @@ public class HttpServer {
                 }
 
                 // Access to remote RMI server
-                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("myserver"); //TODO testen mit entferntem Rechner
-//                IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("//127.0.0.1/server"); // localhost
+                IRemoteSearch remoteSearch = null;
+                try {
+                    remoteSearch = (IRemoteSearch) Naming.lookup("myserver");
+//                    IRemoteSearch remoteSearch = (IRemoteSearch) Naming.lookup("//127.0.0.1/server"); // localhost
+                } catch (NotBoundException e) {
+                    e.printStackTrace();
+                }
 
                 if (queryMap.containsKey("quit")) {                 //quit server
                     sendQuitResponse(clientSocket);
