@@ -6,17 +6,17 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 /**
- * @className DeptServer
+ * @className PhonebookServer
  * @author romanduhr
  * @date   21.06.16
  *
- *  Class creates a server for a department phone book, which receives a data from HttpServer via RMI interface (RMI server).
+ *  Class creates a server for a phone book, which receives a data from HttpServer via RMI interface (RMI server).
  */
-public class DeptServer extends UnicastRemoteObject implements IRemoteSearch {
+public class PhonebookServer extends UnicastRemoteObject implements IRemoteSearch {
 
     private EntryPair[] phonebook;
 
-    public DeptServer() throws RemoteException {
+    public PhonebookServer() throws RemoteException {
         super();
         // Create example phonebook
         phonebook = new EntryPair[]{
@@ -93,7 +93,7 @@ public class DeptServer extends UnicastRemoteObject implements IRemoteSearch {
     public static void main(String args[]) {
 
         try {
-            DeptServer server = new DeptServer();
+            PhonebookServer server = new PhonebookServer();
 
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);     // Port 1099
             Naming.rebind("myserver", server);
